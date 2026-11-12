@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sofeyia × Eden · Live Status</title>
+<style>
+:root{
+  --bg:#f5f6f7; --card:#ffffff; --line:#e7e9eb; --ink:#1a1d20; --mut:#6b7280;
+  --green:#16a34a; --amber:#d97706; --blue:#2563eb; --red:#dc2626; --gray:#9ca3af;
+  --g0:#e8eaec;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 20px 80px}
+header{margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-.3px}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px}
+.sub b{color:var(--ink)}
+.updated{font-size:12.5px;color:var(--mut);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.kpi .lab{font-size:12.5px;color:var(--mut)}
+.kpi .val{font-size:25px;font-weight:700;margin-top:2px;letter-spacing:-.5px}
+.kpi .note{font-size:12px;color:var(--mut);margin-top:2px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;margin-bottom:16px}
+.sec h2{font-size:16px;margin:0 0 4px;font-weight:700}
+.sec .desc{font-size:13px;color:var(--mut);margin:0 0 16px}
+.matrix{display:grid;grid-template-columns:44px repeat(5,1fr);gap:6px;max-width:520px}
+.mhead{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+  color:var(--mut);height:30px}
+.mrow{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
+  color:var(--mut);height:44px;background:#f3f4f5;border-radius:8px}
+.mcell{height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;font-weight:600;border:1px solid transparent;cursor:pointer;
+  transition:transform .06s,box-shadow .12s;position:relative;background:#fff}
+.mcell:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.mcell.sel{outline:2px solid var(--ink);outline-offset:1px}
+.mcell small{position:absolute;bottom:3px;font-size:8.5px;opacity:.75;font-weight:500}
+.m-done{background:#e6f6ec;color:#15803d;border-color:#bce5c8}
+.m-part{background:#fff3d8;color:#a16207;border-color:#f0e2a8}
+.m-sched{background:#e8f0fe;color:#1d4ed8;border-color:#c6d8f7}
+.m-none{background:#fafafa;color:#b0b4b8;border-color:#efeff0}
+.d-signed{background:#e6f6ec;color:#15803d;border-color:#bce5c8}
+.d-client{background:#fef3e2;color:#b45309;border-color:#f5d9ac}
+.d-draft{background:#e8f0fe;color:#1d4ed8;border-color:#c6d8f7}
+.d-blocked{background:#fde8e8;color:#b91c1c;border-color:#f3c2c2}
+.d-sc{background:#fff3d8;color:#a16207;border-color:#f0e2a8}
+.d-none{background:#fafafa;color:#b0b4b8;border-color:#efeff0}
+.detail{margin-top:14px;padding:12px 16px;border-radius:10px;background:#f7f8f9;
+  border:1px solid var(--line);font-size:13.5px;min-height:22px}
+.detail b{font-weight:700}
+.detail .hint{color:var(--mut);font-size:12.5px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--mut)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.timeline{margin-top:18px;border-left:2px solid #e4e6e8;padding-left:26px;
+  max-height:185px;overflow-y:auto;padding-right:10px}
+.ddlbox{margin-top:16px;max-width:560px;border:1.5px solid #f0c4c4;background:#fdf5f5;
+  border-radius:11px;padding:14px 18px}
+.ddlbox .t1{font-weight:700;font-size:14px;color:#b91c1c;margin-bottom:8px}
+.ddlbox .path{font-size:13.5px;margin-bottom:4px;color:var(--ink)}
+.ddlbox .path b{color:#b91c1c}
+.ddlbox .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px;padding-top:10px;
+  border-top:1px dashed #e6c8c8}
+.ddlbox .col .h{font-size:11.5px;font-weight:700;margin-bottom:6px;letter-spacing:.3px}
+.ddlbox .row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0}
+.ddlbox .row b{white-space:nowrap}
+.ddlbox .col.our .h{color:#1d4ed8}
+.ddlbox .col.our .row b{color:#2563eb}
+.ddlbox .col.cli .h{color:#b45309}
+.ddlbox .col.cli .row b{color:#b45309}
+.blockbox{margin:0 0 16px;border:1.5px solid #f3c2c2;background:#fdf1f1;border-radius:11px;padding:14px 18px}
+.blockbox .t1{font-weight:700;font-size:14px;color:#b91c1c;margin-bottom:8px}
+.blockbox .item{display:flex;align-items:baseline;gap:9px;font-size:13.5px;padding:4px 0;color:var(--ink)}
+.blockbox .item::before{content:"●";color:#dc2626;font-size:9px;flex:0 0 auto}
+.priobox{margin:0 0 16px;border:1.5px solid #f0d29a;background:#fff9ec;border-radius:11px;padding:14px 18px}
+.priobox .t1{font-weight:700;font-size:14px;color:#b45309;margin-bottom:8px}
+.priobox .item{font-size:13.5px;padding:3px 0;color:var(--ink)}
+.priobox .item::before{content:"◆";color:#d97706;margin-right:8px;font-size:9px}
+.todobox{margin:0 0 16px;border:1.5px solid #bcd0f5;background:#f2f6ff;border-radius:11px;padding:14px 18px}
+.todobox .t1{font-weight:700;font-size:14px;color:#1d4ed8;margin-bottom:8px}
+.todobox .item{display:flex;align-items:baseline;gap:9px;font-size:13.5px;padding:4px 0;color:var(--ink)}
+.todobox .item::before{content:"●";color:#2563eb;font-size:9px;flex:0 0 auto}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:9px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:13.5px;font-weight:600;color:var(--mut);cursor:pointer}
+.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.roadmap .cols{display:flex;gap:26px}
+.roadmap .col{flex:1;min-width:260px}
+.roadmap .h{font-size:12.5px;font-weight:700;margin-bottom:8px;letter-spacing:.3px}
+.roadmap .li{font-size:13.5px;padding:4px 0;display:flex;gap:9px;align-items:baseline;color:var(--ink)}
+.roadmap .li::before{content:"";width:6px;height:6px;border-radius:3px;background:#9aa6b2;flex:0 0 auto}
+.evt{display:flex;align-items:baseline;gap:12px;padding:7px 0;position:relative}
+.evt::before{content:"";position:absolute;left:-24.5px;top:12px;width:11px;height:11px;
+  border-radius:50%;background:#cbd5e0;border:2px solid #fff}
+.evt.k-done::before{background:#16a34a}
+.evt.k-warn::before{background:#d97706}
+.evt.k-block::before{background:#dc2626}
+.evt.k-holiday::before{background:#8b7355}
+.evt.k-ddl::before{background:#dc2626}
+.evt.k-ddl .t{font-weight:600;color:#b91c1c}
+.evt.k-est::before{background:#cbd5e0}
+.evt .d{font-weight:700;font-size:12.5px;min-width:74px;color:var(--mut)}
+.evt .t{font-size:13.5px}
+.evt.k-block .t{font-weight:600;color:#b91c1c}
+.evt.k-est .t{color:var(--mut)}
+.evt .tag{font-size:11px;color:var(--mut)}
+.bucket{margin-top:14px}
+.bucket .bk{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;
+  margin-bottom:7px;font-size:13.5px;flex-wrap:wrap}
+.bk .cnt{font-weight:700;margin-left:auto;font-size:13px}
+.bk .tag{font-size:12px;color:var(--mut)}
+.bk-empty{opacity:.55}
+.batch{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--line);
+  border-radius:11px;margin-bottom:10px;flex-wrap:wrap}
+.batch .bhead{flex:1;min-width:190px}
+.batch .bname{font-weight:700;font-size:14.5px}
+.batch .bunits{font-size:12.5px;color:var(--mut)}
+.batch .bnote{font-size:12px;color:#9aa6b2;margin-top:3px}
+.batch .bmeta{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.batch .bit{font-size:12.5px}
+.batch .bit b{display:block;font-size:14px;font-weight:700}
+.batch .bit span{color:var(--mut)}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
+.tg-ok{background:#e6f6ec;color:#15803d}.tg-warn{background:#fef3e2;color:#b45309}
+.tg-info{background:#e8f0fe;color:#1d4ed8}.tg-est{background:#f1f2f3;color:#6b7280}
+.lead75{display:flex;align-items:center;gap:12px;background:#fef9ec;border:1px solid #f0e2c0;
+  border-radius:11px;padding:13px 16px;margin-bottom:16px;font-size:14px;flex-wrap:wrap}
+.lead75 b{font-size:17px;color:#b45309}
+.axis-wrap{overflow-x:auto}
+svg text{font-family:inherit}
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px}
+.mono{font-variant-numeric:tabular-nums}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Eden C–G · Live Status</h1>
+      <div class="sub"><b>20 units = 5 buildings (C–G) × 4 floors</b> &nbsp;·&nbsp; Batch cabinet project &nbsp;·&nbsp; by Sofeyia</div>
+      <div class="updated mono">Updated: <span id="upd">—</span></div>
+    </div>
+    <img src="sofeyia-logo.png" alt="Sofeyia" style="height:56px;border-radius:14px;flex:0 0 auto">
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><div class="lab">Measurement done</div>
+      <div class="val" id="kMeas">—</div><div class="note">of 20 units measured</div></div>
+    <div class="kpi"><div class="lab">In design</div>
+      <div class="val" id="kDesign">—</div><div class="note">drawings in progress / review</div></div>
+    <div class="kpi"><div class="lab">Orders before CNY</div>
+      <div class="val" id="kOrder">—</div><div class="note">placed before the Jan 25 shutdown</div></div>
+    <div class="kpi"><div class="lab">Ship before CNY</div>
+      <div class="val" id="kShip">—</div><div class="note">share of all units</div></div>
+  </div>
+
+  <div class="blockbox" id="blockBox"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="meas">Measurement</button>
+    <button class="tab" data-tab="design">Design</button>
+    <button class="tab" data-tab="main">Shipment Plan</button>
+    <button class="tab" data-tab="f202">F202 Model Room</button>
+  </div>
+
+  <div class="tabpanel" id="tab-meas">
+    <div class="sec">
+      <h2>Measurement</h2>
+      <div class="todobox" id="todoBox"></div>
+      <p class="desc">Rows = floors (1F–4F), columns = buildings (C–G). Tap a cell for detail.</p>
+      <div id="measGrid"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#16a34a"></i>Done</span>
+        <span><i class="dot" style="background:#d97706"></i>Partial</span>
+        <span><i class="dot" style="background:#2563eb"></i>Expected Nov</span>
+        <span><i class="dot" style="background:#b0b4b8"></i>Not started</span>
+      </div>
+      <div class="detail" id="measDetail"><span class="hint">Tap a cell to see its unit status.</span></div>
+    </div>
+  </div>
+
+  <div class="tabpanel" id="tab-design" hidden>
+    <div class="sec">
+      <h2>Design</h2>
+      <p class="desc">Same 20-cell grid, coloured by design stage.</p>
+      <div id="designGrid"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#16a34a"></i>Signed</span>
+        <span><i class="dot" style="background:#d97706"></i>Signed w/ comments</span>
+        <span><i class="dot" style="background:#2563eb"></i>Drafting</span>
+        <span><i class="dot" style="background:#dc2626"></i>Blocked</span>
+        <span><i class="dot" style="background:#b0b4b8"></i>Not started</span>
+      </div>
+      <div class="detail" id="designDetail"><span class="hint">Tap a cell to see its unit status.</span></div>
+      <div class="timeline" id="designTimeline"></div>
+    </div>
+  </div>
+
+  <div class="tabpanel" id="tab-main" hidden>
+    <div class="sec">
+      <h2>Tasks for both sides</h2>
+      <div class="roadmap" id="roadmapBox"></div>
+    </div>
+    <div class="sec">
+      <h2>Shipment Plan</h2>
+      <div class="lead75"><span>Production lead time&nbsp;<b>75 days</b>&nbsp;order → shipment.</span></div>
+      <div id="orderList"></div>
+      <div class="axis-wrap" id="axisWrap" style="margin-top:18px"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#333"></i>Order</span>
+        <span><i class="dot" style="background:#16a34a"></i>Shipment</span>
+        <span><i class="dot" style="background:#d97706"></i>F202 priority</span>
+        <span><i class="dot" style="background:#f0e2a8"></i>CNY shutdown (Jan 25 – Feb 18)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabpanel" id="tab-f202" hidden>
+    <div class="sec">
+      <h2>F202 · Model room — priority</h2>
+      <div class="priobox" id="prioBox"></div>
+      <div class="timeline" id="f202Timeline"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Orders are estimated from design progress. Shipment is released once the 3rd deposit and outstanding payments are settled.
+    <div style="margin-top:8px"><b>Sofeyia × Green elephant</b> &nbsp;·&nbsp; Made by Jerry Mao</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA — edit only this block; all sections recalculate.
+   meas (measurement): done / part / sched / none
+   design: signed / client / draft / blocked / none
+   ============================================================ */
+const DATA = {
+  updated: "2026-11-12",
+  meta: { cny:"2027-02-05", stop:"2027-01-25", resume:"2027-02-18", leadDays:75,
+          lastOrderShip:"2026-11-11" },
+  batches: [
+    { id:6, name:"F202 · Model room", pct:0, prio:true, order:"2026-11-05", ship:"2026-11-30",
+      note:"Expedited model room — production started Nov 5" },
+    { id:1, name:"E", pct:10, order:"2026-11-02", ship:"2027-01-16",
+      note:"Ordered Nov 2 — in production" },
+    { id:2, name:"D", pct:10, order:"2026-11-25", ship:"2027-01-25", target:true,
+      note:"Revised drawings expected Nov 14 · order Nov 25 → ship Jan 25 (best effort)" },
+    { id:3, name:"C & F", pct:20, order:"2026-11-25", ship:"2027-01-25", target:true,
+      note:"Revised drawings expected Nov 16 · order Nov 25 → ship Jan 25 (best effort)" },
+    { id:4, name:"C–F 3F + G 1–2F", pct:30, order:"2026-12-15", ship:"2027-03-24",
+      note:"Measurement expected late Nov" },
+    { id:5, name:"4F + G 3–4F", pct:30, order:null, ship:null,
+      note:"Starts after 4F site fit-out — will ship after CNY" }
+  ],
+  units: [
+    { b:"C", f:"1F", meas:"done",  design:"sc",      batch:3 },
+    { b:"C", f:"2F", meas:"done",  design:"sc",      batch:3 },
+    { b:"C", f:"3F", meas:"sched", design:"none",   batch:4 },
+    { b:"C", f:"4F", meas:"none",  design:"none",   batch:5 },
+    { b:"D", f:"1F", meas:"done",  design:"sc",      batch:2 },
+    { b:"D", f:"2F", meas:"done",  design:"sc",      batch:2 },
+    { b:"D", f:"3F", meas:"sched", design:"none",   batch:4 },
+    { b:"D", f:"4F", meas:"none",  design:"none",   batch:5 },
+    { b:"E", f:"1F", meas:"done",  design:"signed", batch:1 },
+    { b:"E", f:"2F", meas:"done",  design:"signed", batch:1 },
+    { b:"E", f:"3F", meas:"sched", design:"none",   batch:4 },
+    { b:"E", f:"4F", meas:"none",  design:"none",   batch:5 },
+    { b:"F", f:"1F", meas:"done",  design:"sc",      batch:3 },
+    { b:"F", f:"2F", meas:"done",  design:"sc",      batch:3 },
+    { b:"F", f:"3F", meas:"sched", design:"none",   batch:4 },
+    { b:"F", f:"4F", meas:"none",  design:"none",   batch:5 },
+    { b:"G", f:"1F", meas:"sched", design:"none",   batch:4 },
+    { b:"G", f:"2F", meas:"sched", design:"none",   batch:4 },
+    { b:"G", f:"3F", meas:"none",  design:"none",   batch:5 },
+    { b:"G", f:"4F", meas:"none",  design:"none",   batch:5 }
+  ],
+  designEvents: [
+    { date:"Sep 20", kind:"done",   text:"Building E drawings issued to client" },
+    { date:"Oct 01", kind:"warn",   text:"Client flagged design issues on Building E" },
+    { date:"Oct 1–7",kind:"holiday",text:"National Day holiday (China)" },
+    { date:"Oct 05", kind:"done",   text:"Building D drawings completed — held back: same issues apply, sent after revision" },
+    { date:"Oct 09", kind:"done",   text:"Our reply sent to client" },
+    { date:"Oct 13", kind:"done",   text:"Design meeting held — revisions agreed" },
+    { date:"Oct 15", kind:"done",   text:"Building E drawings issued (revised)" },
+    { date:"Oct 19", kind:"done",   text:"Building E drawings returned by client" },
+    { date:"Oct 20", kind:"done",   text:"Building E drawings signed off by client" },
+    { date:"Oct 20", kind:"done",   text:"Material specification (TDS) & electrical dimension sheet sent" },
+    { date:"Oct 23", kind:"done",   text:"Building D drawings issued" },
+    { date:"Oct 29", kind:"done",   text:"Building F drawings issued" },
+    { date:"Nov 04", kind:"done",   text:"Client returned Building F & D drawings" },
+    { date:"Nov 04", kind:"done",   text:"F202 priority request received (model room)" },
+    { date:"Nov 05", kind:"done",   text:"F202 signed confirmation received" },
+    { date:"Nov 14", kind:"est",    text:"Building D revised production drawings to be issued" },
+    { date:"Nov 16", kind:"est",    text:"Building F revised production drawings to be issued" },
+    { date:"Pending", kind:"block", text:"Shipment on hold — 3rd deposit & outstanding payments pending" }
+  ],
+  blockers: [
+    "Deposits received to date cover the production cost of the first two buildings (E & D).",
+    "Shipment cannot be released until the 3rd deposit and all outstanding payments are settled."
+  ],
+  clientTodo: {
+    title: "Confirm fit-out readiness — by Nov 20",
+    lines: [
+      "Please confirm when C–F 3F + G 1F–2F will be fit-out ready — if this can be done before Nov 20, we will plan our measurement trip accordingly."
+    ]
+  },
+  roadmap: {
+    us: [
+      "Deposits received cover the production cost of E & D",
+      "Issuing revised production drawings — D expected Nov 14, F Nov 16",
+      "F202 expedited — delivery target end of Nov (best effort)"
+    ],
+    client: [
+      "Settle the 3rd deposit & outstanding payments — required for shipment",
+      "Confirm drawings as provided by Sofeyia"
+    ]
+  },
+  f202: {
+    title: "F202 · Model room — priority (expedited)",
+    lines: [
+      "All F202 products are expedited.",
+      "Client request: on site by Dec 10. We are targeting delivery by end of Nov — best effort, not guaranteed.",
+      "Excluded: colour-tuned aluminium-frame glass doors & shelves (will ship later)."
+    ],
+    events: [
+      { date:"Nov 04", kind:"done", text:"Priority request received — F202 to be the model room" },
+      { date:"Nov 04", kind:"done", text:"Drawings revised the same day" },
+      { date:"Nov 05", kind:"done", text:"Signed confirmation received from client" },
+      { date:"Nov 05", kind:"done", text:"Production started (expedited)" },
+      { date:"End Nov", kind:"est",  text:"Our delivery target — best effort, not guaranteed" },
+      { date:"Dec 10", kind:"warn",  text:"Client's on-site request" }
+    ]
+  }
+};
+
+const BUILDINGS = ["C","D","E","F","G"];
+const FLOORS = ["1F","2F","3F","4F"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const $ = sel => document.querySelector(sel);
+const total = DATA.units.length;
+const u = (b,f) => DATA.units.find(x => x.b===b && x.f===f);
+const batchOf = id => DATA.batches.find(x => x.id===id);
+
+const MEAS = {
+  done:{cls:"m-done",label:"Done",full:"Done"},
+  part:{cls:"m-part",label:"Partial",full:"Partially done"},
+  sched:{cls:"m-sched",label:"Expected Nov",full:"Expected late Nov — awaiting site handover from client"},
+  none:{cls:"m-none",label:"Not started",full:"Not started — no site condition yet"}
+};
+const DESIGN = {
+  signed:{cls:"d-signed",color:"#16a34a",label:"Signed",full:"Signed — drawings confirmed"},
+  sc:{cls:"d-sc",color:"#d97706",label:"Signed w/ comments",full:"Signed with comments — production drawings to be revised"},
+  client:{cls:"d-client",color:"#d97706",label:"With client",full:"With client — awaiting approval"},
+  draft:{cls:"d-draft",color:"#2563eb",label:"Drafting",full:"Drafting — drawings in progress"},
+  blocked:{cls:"d-blocked",color:"#dc2626",label:"Blocked",full:"Blocked — needs design meeting"},
+  none:{cls:"d-none",color:"#b0b4b8",label:"Not started",full:"Not started"}
+};
+function d2d(s){ return new Date(s+"T00:00:00"); }
+function monthOf(s){ const d=d2d(s); return MONTHS[d.getMonth()]+" "+d.getFullYear(); }
+function fullDate(s){ const d=d2d(s); return MONTHS[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear(); }
+function fmt(s){ const d=d2d(s); return MONTHS[d.getMonth()]+" "+d.getDate(); }
+
+let sel = { mode:null, b:null, f:null };
+
+function renderGrid(mode){
+  const style = mode==="meas" ? MEAS : DESIGN;
+  const key = mode==="meas" ? "meas" : "design";
+  let h = `<div class="matrix"><div class="mhead"></div>` +
+    BUILDINGS.map(b=>`<div class="mhead">${b}</div>`).join("");
+  FLOORS.forEach(f=>{
+    h += `<div class="mrow">${f}</div>`;
+    BUILDINGS.forEach(b=>{
+      const unit = u(b,f), m = style[unit[key]];
+      const isSel = sel.mode===mode && sel.b===b && sel.f===f;
+      h += `<div class="mcell ${m.cls}${isSel?" sel":""}" data-mode="${mode}" data-b="${b}" data-f="${f}">
+        ${b}${f}<small>${m.label}</small></div>`;
+    });
+  });
+  return h + `</div>`;
+}
+
+function unitDetail(mode, unit){
+  if(mode==="meas"){
+    return `<b>${unit.b}-${unit.f}</b> &nbsp;·&nbsp; Measurement: ${MEAS[unit.meas].full || MEAS[unit.meas].label}`;
+  }
+  return `<b>${unit.b}-${unit.f}</b> &nbsp;·&nbsp; Design: ${DESIGN[unit.design].full}`;
+}
+
+function render(){
+  $("#upd").textContent = DATA.updated;
+  const nMeas = DATA.units.filter(x=>x.meas==="done").length;
+  const nDesign = DATA.units.filter(x=>x.design!=="none").length;
+  const orderBeforeCny = DATA.batches.filter(b=>b.order && b.order<=DATA.meta.stop).reduce((s,b)=>s+b.pct,0);
+  const shipBefore = DATA.batches.filter(b=>b.ship && b.ship<=DATA.meta.stop).reduce((s,b)=>s+b.pct,0);
+
+  $("#kMeas").textContent = nMeas+"/20";
+  $("#kDesign").textContent = nDesign;
+  $("#kOrder").textContent = orderBeforeCny+"%";
+  $("#kShip").textContent = shipBefore+"%";
+
+  $("#measGrid").innerHTML = renderGrid("meas");
+  $("#designGrid").innerHTML = renderGrid("design");
+
+  if(sel.mode==="meas" && sel.b) $("#measDetail").innerHTML = unitDetail("meas", u(sel.b,sel.f));
+  else $("#measDetail").innerHTML = `<span class="hint">Tap a cell to see its unit status.</span>`;
+  if(sel.mode==="design" && sel.b) $("#designDetail").innerHTML = unitDetail("design", u(sel.b,sel.f));
+  else $("#designDetail").innerHTML = `<span class="hint">Tap a cell to see its unit status.</span>`;
+
+  // 付款口径：破格生产 + 出货待付款
+  $("#blockBox").innerHTML = `
+    <div class="t1">Payment — 3rd deposit &amp; outstanding payments</div>
+    ${DATA.blockers.map(x=>`<div class="item">${x}</div>`).join("")}`;
+
+  // 客户待办（11.20 硬装条件确认）
+  $("#todoBox").innerHTML = `
+    <div class="t1">${DATA.clientTodo.title}</div>
+    ${DATA.clientTodo.lines.map(x=>`<div class="item">${x}</div>`).join("")}`;
+
+  // 主线：双方任务
+  $("#roadmapBox").innerHTML = `
+    <div class="cols">
+      <div class="col"><div class="h" style="color:#1d4ed8">Sofeyia</div>
+        ${DATA.roadmap.us.map(x=>`<div class="li">${x}</div>`).join("")}</div>
+      <div class="col"><div class="h" style="color:#b45309">CLIENT</div>
+        ${DATA.roadmap.client.map(x=>`<div class="li">${x}</div>`).join("")}</div>
+    </div>`;
+
+  // F202 优先交付线详情
+  $("#prioBox").innerHTML = `
+    <div class="t1">${DATA.f202.title}</div>
+    ${DATA.f202.lines.map(x=>`<div class="item">${x}</div>`).join("")}`;
+  $("#f202Timeline").innerHTML = DATA.f202.events.map(e=>
+    `<div class="evt k-${e.kind}"><div class="d">${e.date}</div><div class="t">${e.text}</div></div>`).join("");
+
+  // 设计事件时间线
+  $("#designTimeline").innerHTML = DATA.designEvents.map(e=>{
+    const tag = e.kind==="block" ? `<span class="tag" style="color:#b91c1c;font-weight:600">bottleneck</span>`
+      : e.kind==="est" ? `<span class="tag">expected</span>` : "";
+    return `<div class="evt k-${e.kind}"><div class="d">${e.date}</div>
+      <div class="t">${e.text}</div>${tag}</div>`;
+  }).join("");
+  const tl = $("#designTimeline"); tl.scrollTop = tl.scrollHeight;
+
+  // 下单批次（预计，确图即下单）
+  $("#orderList").innerHTML = DATA.batches.map(b=>{
+    const us = DATA.units.filter(x=>x.batch===b.id);
+    const orderTxt = b.order ? fullDate(b.order) : "TBD";
+    const shipTxt = b.ship ? fullDate(b.ship) : "TBD";
+    const tag = b.prio ? `<span class="tag tg-warn">Priority · best effort</span>`
+      : b.target ? `<span class="tag tg-warn">Target · best effort</span>`
+      : !b.ship ? `<span class="tag tg-est">TBD</span>`
+      : b.ship<=DATA.meta.stop ? `<span class="tag tg-ok">Before CNY</span>`
+      : `<span class="tag tg-info">After CNY</span>`;
+    const unitsTxt = b.prio ? "F-2F · model room" : us.map(x=>x.b+"-"+x.f).join(" · ");
+    return `<div class="batch">
+      <div class="bhead"><div class="bname">${b.name}${b.pct?` · ${b.pct}%`:""}</div>
+        <div class="bunits">${unitsTxt}</div>
+        ${b.note?`<div class="bnote">${b.note}</div>`:""}</div>
+      <div class="bmeta">
+        <div class="bit"><span>Order (est.)</span><b class="mono">${orderTxt}</b></div>
+        <div class="bit"><span>Ship ETA</span><b class="mono">${shipTxt}</b></div>${tag}
+      </div></div>`;
+  }).join("") +
+  `<p style="font-size:12.5px;color:var(--mut);margin:12px 4px 0">All order dates are estimates.</p>`;
+
+  renderTimeline();
+}
+
+function renderTimeline(){
+  const W=1000, LW=150, PR=20, X0=LW, PW=W-LW-PR;
+  const START="2026-09-01", END="2027-06-30";
+  const d0=d2d(START), d1=d2d(END), span=(d1-d0)/86400000;
+  const X = s => X0 + ((d2d(s)-d0)/86400000)/span*PW;
+  const rowH=46, y0=40, H=y0+DATA.batches.length*rowH+40;
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+  s += `<defs><pattern id="ho" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#faf7ef"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8dcc0" stroke-width="2.5"/></pattern></defs>`;
+  const hs=X(DATA.meta.stop), he=X(DATA.meta.resume);
+  s += `<rect x="${hs}" y="28" width="${he-hs}" height="${DATA.batches.length*rowH+6}" fill="url(#ho)"/>`;
+  s += `<text x="${(hs+he)/2}" y="22" text-anchor="middle" font-size="11" fill="#a08a4f">CNY shutdown</text>`;
+  let cur=new Date("2026-09-01T00:00:00");
+  while(cur<=d1){
+    const x=X(cur.toISOString().slice(0,10));
+    s += `<line x1="${x}" y1="28" x2="${x}" y2="${y0+DATA.batches.length*rowH}" stroke="#ececec"/>`;
+    s += `<text x="${x}" y="16" text-anchor="middle" font-size="10.5" fill="#9aa0a6">${MONTHS[cur.getMonth()]}</text>`;
+    cur=new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+  const lx=X(DATA.meta.lastOrderShip);
+  s += `<line x1="${lx}" y1="28" x2="${lx}" y2="${y0+DATA.batches.length*rowH}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  s += `<text x="${lx+4}" y="${y0+DATA.batches.length*rowH+22}" font-size="11" fill="#dc2626" font-weight="700">Nov 11 — last order to ship before CNY</text>`;
+  const tx=X(DATA.updated);
+  s += `<line x1="${tx}" y1="28" x2="${tx}" y2="${y0+DATA.batches.length*rowH}" stroke="#2563eb" stroke-width="1.3"/>`;
+  s += `<text x="${tx+4}" y="38" font-size="10.5" fill="#2563eb">Today</text>`;
+
+  DATA.batches.forEach((b,i)=>{
+    const top=y0+i*rowH, mid=top+16;
+    s += `<text x="8" y="${mid-1}" font-size="13" font-weight="700">${b.name}${b.pct?` · ${b.pct}%`:""}</text>`;
+    if(!b.order){
+      s += `<text x="${X0+30}" y="${mid+4}" font-size="11.5" fill="#9aa0a6">Order TBD</text>`;
+      return;
+    }
+    const ox=X(b.order), sx=X(b.ship);
+    const after = b.ship > DATA.meta.stop;
+    const barCol = b.prio ? "#d97706" : "#16a34a";
+    const barOp = b.prio ? ".85" : b.target ? ".4" : ".85";
+    if(!after){
+      s += `<rect x="${ox}" y="${mid-7}" width="${sx-ox}" height="14" rx="4" fill="${barCol}" opacity="${barOp}"/>`;
+    }else{
+      s += `<rect x="${ox}" y="${mid-7}" width="${X(DATA.meta.stop)-ox}" height="14" rx="4" fill="#16a34a" opacity=".4"/>`;
+      s += `<rect x="${X(DATA.meta.resume)}" y="${mid-7}" width="${sx-X(DATA.meta.resume)}" height="14" rx="4" fill="#16a34a" opacity=".85"/>`;
+      s += `<line x1="${X(DATA.meta.stop)}" y1="${mid}" x2="${X(DATA.meta.resume)}" y2="${mid}" stroke="#16a34a" stroke-dasharray="3 3" opacity=".5"/>`;
+    }
+    s += `<polygon points="${ox},${mid-11} ${ox-5},${mid-18} ${ox+5},${mid-18}" fill="#333"/>`;
+    s += `<text x="${ox-6}" y="${mid-24}" text-anchor="middle" font-size="10.5" fill="#666">${fmt(b.order)}</text>`;
+    s += `<rect x="${sx-4.5}" y="${mid-4.5}" width="9" height="9" fill="#fff" stroke="#333" stroke-width="1.6" transform="rotate(45 ${sx} ${mid})"/>`;
+    s += `<text x="${sx+10}" y="${mid+4}" font-size="11.5" fill="#333">${fmt(b.ship)}</text>`;
+  });
+  s += `</svg>`;
+  $("#axisWrap").innerHTML = s;
+}
+
+document.addEventListener("click", e=>{
+  const t = e.target.closest(".tab");
+  if(t){
+    document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active", b===t));
+    document.querySelectorAll(".tabpanel").forEach(p=>p.hidden = (p.id !== "tab-"+t.dataset.tab));
+    return;
+  }
+  const c = e.target.closest(".mcell");
+  if(!c) return;
+  sel = { mode:c.dataset.mode, b:c.dataset.b, f:c.dataset.f };
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

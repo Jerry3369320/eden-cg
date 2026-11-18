@@ -242,7 +242,7 @@ svg text{font-family:inherit}
    design: signed / client / draft / blocked / none
    ============================================================ */
 const DATA = {
-  updated: "2026-11-12",
+  updated: "2026-11-18",
   meta: { cny:"2027-02-05", stop:"2027-01-25", resume:"2027-02-18", leadDays:75,
           lastOrderShip:"2026-11-11" },
   batches: [
@@ -251,9 +251,9 @@ const DATA = {
     { id:1, name:"E", pct:10, order:"2026-11-02", ship:"2027-01-16",
       note:"Ordered Nov 2 — in production" },
     { id:2, name:"D", pct:10, order:"2026-11-25", ship:"2027-01-25", target:true,
-      note:"Revised drawings expected Nov 14 · order Nov 25 → ship Jan 25 (best effort)" },
+      note:"Final drawings this week · order Nov 25 → ship Jan 25 (best effort)" },
     { id:3, name:"C & F", pct:20, order:"2026-11-25", ship:"2027-01-25", target:true,
-      note:"Revised drawings expected Nov 16 · order Nov 25 → ship Jan 25 (best effort)" },
+      note:"F final drawings sent Nov 18 · C this week · order Nov 25 → ship Jan 25 (best effort)" },
     { id:4, name:"C–F 3F + G 1–2F", pct:30, order:"2026-12-15", ship:"2027-03-24",
       note:"Measurement expected late Nov" },
     { id:5, name:"4F + G 3–4F", pct:30, order:null, ship:null,
@@ -272,8 +272,8 @@ const DATA = {
     { b:"E", f:"2F", meas:"done",  design:"signed", batch:1 },
     { b:"E", f:"3F", meas:"sched", design:"none",   batch:4 },
     { b:"E", f:"4F", meas:"none",  design:"none",   batch:5 },
-    { b:"F", f:"1F", meas:"done",  design:"sc",      batch:3 },
-    { b:"F", f:"2F", meas:"done",  design:"sc",      batch:3 },
+    { b:"F", f:"1F", meas:"done",  design:"client",  batch:3 },
+    { b:"F", f:"2F", meas:"done",  design:"client",  batch:3 },
     { b:"F", f:"3F", meas:"sched", design:"none",   batch:4 },
     { b:"F", f:"4F", meas:"none",  design:"none",   batch:5 },
     { b:"G", f:"1F", meas:"sched", design:"none",   batch:4 },
@@ -297,8 +297,8 @@ const DATA = {
     { date:"Nov 04", kind:"done",   text:"Client returned Building F & D drawings" },
     { date:"Nov 04", kind:"done",   text:"F202 priority request received (model room)" },
     { date:"Nov 05", kind:"done",   text:"F202 signed confirmation received" },
-    { date:"Nov 14", kind:"est",    text:"Building D revised production drawings to be issued" },
-    { date:"Nov 16", kind:"est",    text:"Building F revised production drawings to be issued" },
+    { date:"Nov 18", kind:"done",   text:"Building F final drawings issued for signature" },
+    { date:"This week", kind:"est", text:"Buildings C & D final drawings to be issued" },
     { date:"Pending", kind:"block", text:"Shipment on hold — 3rd deposit & outstanding payments pending" }
   ],
   blockers: [
@@ -357,7 +357,7 @@ const MEAS = {
 const DESIGN = {
   signed:{cls:"d-signed",color:"#16a34a",label:"Signed",full:"Signed — drawings confirmed"},
   sc:{cls:"d-sc",color:"#d97706",label:"Signed w/ comments",full:"Signed with comments — production drawings to be revised"},
-  client:{cls:"d-client",color:"#d97706",label:"With client",full:"With client — awaiting approval"},
+  client:{cls:"d-client",color:"#d97706",label:"With client",full:"With client — final drawings issued, awaiting signature"},
   draft:{cls:"d-draft",color:"#2563eb",label:"Drafting",full:"Drafting — drawings in progress"},
   blocked:{cls:"d-blocked",color:"#dc2626",label:"Blocked",full:"Blocked — needs design meeting"},
   none:{cls:"d-none",color:"#b0b4b8",label:"Not started",full:"Not started"}
